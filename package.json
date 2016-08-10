@@ -1,0 +1,29 @@
+{
+  "name": "structr-4-tasks",
+  "version": "0.1.0",
+  "description": "A library that exposes REST connections to an instance of Structr",
+  "main": "structr-4-tasks.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eric-schleicher/structr-4-tasks.git"
+  },
+  "keywords": [
+    "Structr",
+    "nodejs"
+  ],
+  "author": "Eric Schleicher",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/eric-schleicher/structr-4-tasks/issues"
+  },
+  "homepage": "https://github.com/eric-schleicher/structr-4-tasks#readme",
+  "dependencies": {
+    "argv": "0.0.2",
+    "q": "^1.4.1",
+    "request": "^2.74.0",
+    "request-promise": "^4.1.1"
+  }
+}
