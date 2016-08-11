@@ -2,11 +2,12 @@
 var request = require('request-promise');
 var argv = require('minimist')(process.argv.slice(2));
 var Q = require('q');
+var lodash = require('lodash');
 
 // PRIVATE VARIABLES
 var username, password, isInit, isAuthed, cookie;
 var protocol, server, port;
-var loginResource, maintenanceResource, restBase, installLocation;
+var loginResource, maintenanceResource, restBase, installLocation, verbose, logger;
 
 // A function to get the fully qualified url of the structr server
 var url =  function () {
@@ -99,6 +100,9 @@ var restAbles = {
 
         }
     },
+    put: function(entity, id){
+        throw new Error("this function not yet implemented...")
+    },
     getSchema: function (entity, optionalView) {
         var urlBits = [url(), restBase, '_schema'];
         if (entity) {
@@ -111,33 +115,65 @@ var restAbles = {
 
 // The purpose of this library
 var structr = {
-    log: console.log,
     rest: restAbles,
-    init: function (u, p, utils) {
+    init: function (u, p, options) {
         //if by chance we're already initialized and authenticated, don't try again.
         if(isInit && isAuthed){
-            return this;
+            return Q.resolve(this);
         }
 
         var thisStructr = this;
 
         //setup the logger
-        if (utils && (typeof utils.log === 'function')) {
-            thisStructr.log = utils.log;
-        } else if (typeof utils === 'function') {
+        if (logger && (typeof logger.log === 'function')) {
+            thisStructr.log = logger.log;
+        } else if (typeof logger === 'function') {
             //in case the logger was passed directly in
-            thisStructr.log = utils;
+            thisStructr.log = logger;
+        }
+        else {
+            //default to use the standard logger
+            thisStructr.log = console.log;
+        }
+
+        var defaultOptions = {
+            protocol : ['http://', 'https://'].indexOf(argv['protocol']) > -1 ? argv['protocol'] : "http://",
+            server : argv['server'] || "127.0.0.1",
+            port : argv['port'] || undefined,
+            loginResource : "structr/rest/login",
+            maintenanceResource : "structr/rest/maintenance/sync",
+            restBase : "structr/rest",
+            installLocation : argv['structr-install'] || '/usr/lib/structr-ui',
+            verbose: false,
+            logger: console
+        };
+
+        if (options){
+            lodash.defaultsDeep(options, defaultOptions)
+        }
+        else{
+            options = defaultOptions;
         }
 
         username = u;
         password = p;
-        protocol = ['http://', 'https://'].indexOf(argv['protocol']) > -1 ? argv['protocol'] : "http://";
-        server = argv['server'] || "127.0.0.1";
-        port = argv['port'] || undefined;
-        loginResource = "structr/rest/login";
-        maintenanceResource = "structr/rest/maintenance/sync";
-        restBase = "structr/rest";
-        installLocation = argv['structr-install'] || '/usr/lib/structr-ui';
+        // Take the properties from the defaulted options object
+        protocol = options.protocol;
+        server = options.server;
+        port = options.port;
+        loginResource =options.loginResource;
+        maintenanceResource = options.maintenanceResource;
+        restBase = options.restBase;
+        installLocation = options.installLocation;
+        verbose = options.verbose;
+
+        // todo not sure if this works correctly.
+        // this is weird... test this to make sure that the logger reference is set corrrectly.
+
+        logger = options.logger;
+        this.logger = logger;
+
+        //set the inital state of the object
         isInit = true;
         return authenticate(thisStructr)
             .then(function () {

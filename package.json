@@ -1,6 +1,6 @@
 {
   "name": "structr-4-tasks",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A library that exposes REST connections to an instance of Structr",
   "main": "structr-4-tasks.js",
   "scripts": {
@@ -22,6 +22,8 @@
   "homepage": "https://github.com/eric-schleicher/structr-4-tasks#readme",
   "dependencies": {
     "argv": "0.0.2",
+    "lodash": "^4.14.2",
+    "minimist": "^1.2.0",
     "q": "^1.4.1",
     "request": "^2.74.0",
     "request-promise": "^4.1.1"
