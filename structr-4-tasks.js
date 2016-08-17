@@ -27,6 +27,7 @@ var getOptions = function () {
 var authenticate = function (thisStructr) {
     thisStructr.log("Server:", server + ":" + port);
     if (isInit !== true) {
+        //even though we could return a rejected promise, it's better to unrecoverably fail here, since it's likely a code problem, and not an functional issue.
         throw new Error("Cannot authenticate if not initialized; please initialize first");
     }
 

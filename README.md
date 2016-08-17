@@ -7,11 +7,29 @@ var structr = require('structr-4-tasks');
 //return the base object, which is not initialized
 
 // Initializing (and authenticating the library)
-// structr.init(username, password [, logger])
+// structr.init(username, password [, options])
 structr.init("myusername", mypassword);
-
+```
+By omitting an options object, you are implicitly accepting the following defaults;
+```javacscript
+var defaultOptions = {
+    protocol : ['http://', 'https://'].indexOf(argv['protocol']) > -1 ? argv['protocol'] : "http://",
+    server : argv['server'] || "127.0.0.1",
+    port : argv['port'] || undefined,
+    loginResource : "structr/rest/login",
+    maintenanceResource : "structr/rest/maintenance/sync",
+    restBase : "structr/rest",
+    installLocation : argv['structr-install'] || '/usr/lib/structr-ui',
+    verbose: false,
+    logger: console
+};
 ```
 
+This means that you can provide command line options to overrise the following properties 
+ - protocol
+ - server
+ - port
+ - installLocation *typically `/usr/lib/structr-ui` on most linux systems*
 
 Optionally you can set the logger to be your preferred logging function. if you don't provide a value, the default console logger will be used.   this is helpful if you are using another library which uses a specialised logging function, as is commonly done when using Gulp.
 
@@ -36,6 +54,13 @@ var structr = require('structr-4-tasks').init("myusername", "mypassword", gulpUt
 
 ``` 
 
+
+Best practice
+Use environment variables in your code to handle the username and password so that you don't have credentials in your code.
+example:
+```javascript
+var structr = require('structr-4-tasks).init(process.env.username process.env.password)
+```
 **Note:**
 
 the REST function in the library are not attached to the structr.rest until the library has successfully authenticated.  this forces failure on premature RESTful calls to structr. 
