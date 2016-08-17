@@ -66,39 +66,110 @@ var authenticate = function (thisStructr) {
 
 var publishers = {
     "s3": {
-        upload: function (localFile, s3Params) {
+        checkFile: function (localfile, s3Params) {
             var that = this;
-            if(!this.s3client){
+            //verify a client
+            if (!that.s3client) {
                 return Q.reject(new Error("No Active S3 Client, make sure to call 'createClient' with your credenatials"));
             }
-            var params = {
-                localFile: localFile,
-                s3Params: s3Params
-            };
 
-            return Q.promise(function(resolvePromise, rejectPromise){
-                var uploader = that.s3client.uploadFile(params);
+            return Q.promise(function (resolvePromise, rejectPromise) {
+                //here we're just getting the list from the bucket that will be used
+                var listParams = {
+                    "s3Params": {
+                        "Bucket": s3Params.Bucket,
+                        //"Prefix": s3Params.Key
+                    }
+                };
+                var searchResult =false
+                var bucketList = that.s3client.listObjects(listParams);
 
-                uploader.on('error', function (err) {
+                bucketList.on('error', function (err) {
                     rejectPromise(err);
                 });
-                uploader.on('progress', function () {
-                    structr.log("progress", uploader.progressMd5Amount,
-                        uploader.progressAmount, uploader.progressTotal);
+                bucketList.on('data', function (data) {
+                    //inspect the result to see if the file we're looking for is present
+                    try{
+                        if (data && data.Contents[0].Key === s3Params.Key) {
+                            searchResult=true;
+                        }
+                        //structr.log("progress", bucketList.progressAmount, bucketList.progressTotal);
+                    }
+                    catch(e){
+                        rejectPromise(e);
+                    }
                 });
-                uploader.on('end', function () {
-                    resolvePromise(localFile)
+                bucketList.on('end', function () {
+                    //if we got here, we didn't find it.
+                    try{
+
+                    resolvePromise(searchResult);
+                    }
+                    catch(e){
+                        debugger;
+                    }
                 });
 
             })
+
+        },
+        upload: function (localFile, s3Params, force) {
+            var that = this;
+            //verify a client
+            if (!that.s3client) {
+                return Q.reject(new Error("No Active S3 Client, make sure to call 'createClient' with your credenatials"));
+            }
+
+            if (force === undefined) {
+                force = false;
+            }
+
+            //1) check the file exists in the s3bucket
+            try {
+                return that.checkFile(localFile, s3Params)
+                    .then(function (fileExistsAlready) {
+                        if ((fileExistsAlready && force === true)|| !fileExistsAlready) {
+                            return
+                        }
+                        else {
+                            return Q.reject(new Error("The requested for upload already exists an force option not used"));
+                        }
+                    })
+                    .then(function () {
+                        var params = {
+                            localFile: localFile,
+                            s3Params: s3Params
+                        };
+
+                        return Q.promise(function (resolvePromise, rejectPromise) {
+                            var uploader = that.s3client.uploadFile(params);
+
+                            uploader.on('error', function (err) {
+                                rejectPromise(err);
+                            });
+                            uploader.on('progress', function () {
+                                structr.log("progress", uploader.progressMd5Amount,
+                                    uploader.progressAmount, uploader.progressTotal);
+                            });
+                            uploader.on('end', function () {
+                                resolvePromise(localFile)
+                            });
+
+                        })
+
+                    });
+            }
+            catch (e) {
+                return Q.reject(e);
+            }
         },
         createClient: function (accessKey, secretAccessKey) {
-            try{
-                if (!this.s3){
-                    this.s3 =require('s3');
+            try {
+                if (!this.s3) {
+                    this.s3 = require('s3');
                 }
 
-                if (!this.s3Client){
+                if (!this.s3Client) {
                     this.s3client = this.s3.createClient({
                         maxAsyncS3: 20,     // this is the default
                         s3RetryCount: 3,    // this is the default
@@ -116,7 +187,7 @@ var publishers = {
 
                 return Q.resolve(this.s3client);
             }
-            catch(e){
+            catch (e) {
                 return Q.reject(e);
             }
         }
@@ -189,23 +260,23 @@ var structr = {
                 file: filename
             };
 
-            try{
+            try {
                 return structr.rest.post(maintenanceResource, backupBody)
                     .then(function (result) {
                         //move if necessary
-                        if (toPath){
+                        if (toPath) {
                             return structr.backup.move(filename, toPath);
                         }
-                        else{
+                        else {
                             return Q.resolve(filename);
                         }
                     })
                     .then(function () {
                         //publish if necessary
-                        if(pubOptions){
+                        if (pubOptions) {
                             return structr.backup.publish(filename, pubOptions);
                         }
-                        else{
+                        else {
                             return Q.resolve(filename)
                         }
                     })
@@ -213,7 +284,7 @@ var structr = {
                         return Q.reject(e)
                     });
             }
-            catch(e){
+            catch (e) {
                 return Q.reject(e);
             }
 
@@ -244,28 +315,27 @@ var structr = {
 
         },
         publish: function (filename, publishOptions) {
-            try{
+            try {
 
                 if (server === '127.0.0.1' || server === "localhost") {
                     publishOptions.destination.Key = filename;
                     thisPublisher = publishers[publishOptions.method];
 
-                    return thisPublisher.createClient(publishOptions.credentials.accessKey,publishOptions.credentials.secretAccessKey)
-                        .then(function(result){
-                            return thisPublisher.upload([installLocation,filename].join(path.sep), publishOptions.destination)
+                    return thisPublisher.createClient(publishOptions.credentials.accessKey, publishOptions.credentials.secretAccessKey)
+                        .then(function (result) {
+                            return thisPublisher.upload([installLocation, filename].join(path.sep), publishOptions.destination, publishOptions.forceOverwrite);
                         })
-                        .catch(function(e){
+                        .catch(function (e) {
                             return Q.reject(e);
                         });
 
 
-
                 }
-                else{
+                else {
                     return Q.reject(new Error("publish option specified, however cannot publish from remote location"));
                 }
             }
-            catch(e){
+            catch (e) {
                 return Q.reject(e);
             }
         }
@@ -298,7 +368,7 @@ var structr = {
             maintenanceResource: "maintenance/sync",
             defaultBackupLocation: "backups",
             restBase: "structr/rest",
-            installLocation: argv['structr-install'] || '/usr/lib/structr-ui',
+            installLocation: '/usr/lib/structr-ui',
             verbose: false,
             logger: console
         };
@@ -335,6 +405,9 @@ var structr = {
             .catch(function (e) {
                 return Q.reject(e);
             })
+    },
+    installLocation:function(){
+        return installLocation;
     }
 };
 
