@@ -105,8 +105,20 @@ var structr = {
 
             }
         },
-        put: function (entity, id) {
-            throw new Error("this function not yet implemented...")
+        put: function (entity, id, data) {
+            //if not provided with a plausible id value; fail.
+            if (!id || /[0-9a-fA-F]{32}/.test(id)===false){
+                return Q.reject(new Error("PUT operations require an id value that conforms the uuid4 specification"));
+            }
+            //if not provided with an entity value; fail
+            if (!entity){
+                return Q.reject(new Error("Invalid or missing Entity Type value; please check your input and try again"));
+            }
+
+            var urlBits = [url(), restBase, id];
+            var putOptions = getOptions();
+            putOptions.body = data;
+            return Q(request.delete(urlBits.join("/"), putOptions));
         },
         getSchema: function (entity, optionalView) {
             var urlBits = [url(), restBase, '_schema'];
