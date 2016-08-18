@@ -212,7 +212,7 @@ var structr = {
         if (logger && (typeof logger.log === 'function')) {
             thisStructr.log = logger.log;
         } else if (typeof logger === 'function') {
-            //in case the logger was passed directly in
+            //in case the logger function was passed directly in
             thisStructr.log = logger;
         }
         else {
