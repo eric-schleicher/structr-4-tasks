@@ -117,13 +117,13 @@ var structr = {
         }
     },
     backup: {
-        run: function (filename, pubOptions, toPath) {
+        run: function (filename, pubOptions) {
             if (!isAuthed) {
-                return Q.reject(new Error("Structr must be authorized to make a backup"))
+                return Q.reject(new Error("Structr must be initialized and authorized in order to run a backup"))
             }
             //verify a filename has been presented
             if (!filename) {
-                return Q.reject(new Error("You cannot run backup without both "))
+                return Q.reject(new Error("You cannot run backup without a backup filename"))
             }
 
             //package the filename
@@ -134,15 +134,6 @@ var structr = {
 
             try {
                 return structr.rest.post(maintenanceResource, backupBody)
-                    .then(function (result) {
-                        //move if necessary
-                        if (toPath) {
-                            return structr.backup.move(filename, toPath);
-                        }
-                        else {
-                            return Q.resolve(filename);
-                        }
-                    })
                     .then(function () {
                         //publish if necessary
                         if (pubOptions) {
