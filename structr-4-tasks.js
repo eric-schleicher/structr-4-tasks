@@ -179,20 +179,17 @@ var structr = {
         },
         publish: function (filename, publishOptions) {
             try {
-
                 if (server === '127.0.0.1' || server === "localhost") {
-                    publishOptions.destination.Key = filename;
-                    thisPublisher = publishers[publishOptions.method];
-
-                    return thisPublisher.createClient(publishOptions.credentials.accessKey, publishOptions.credentials.secretAccessKey)
-                        .then(function (result) {
-                            return thisPublisher.upload([installLocation, filename].join(path.sep), publishOptions.destination, publishOptions.forceOverwrite);
-                        })
-                        .catch(function (e) {
-                            return Q.reject(e);
-                        });
-
-
+                    //publishOptions.destination.Key = filename;
+                    publishOptions.destination.Key = publishOptions.bucketSubfolder ? [publishOptions.bucketSubfolder,filename].join("/") : filename;
+                    thisPublisher = publishers[publishOptions.method].createClient(publishOptions.credentials.accessKey, publishOptions.credentials.secretAccessKey);
+                    //as a convenience feature, task the selected logger to the publisher.
+                    thisPublisher.log = structr.log;
+                    return thisPublisher.upload(
+                        [installLocation, filename].join(path.sep),
+                        publishOptions.destination,
+                        publishOptions.forceOverwrite
+                    );
                 }
                 else {
                     return Q.reject(new Error("publish option specified, however cannot publish from remote location"));
