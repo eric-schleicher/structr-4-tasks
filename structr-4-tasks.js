@@ -4,6 +4,7 @@ var argv = require('minimist')(process.argv.slice(2));
 var Q = require('q');
 var lodash = require('lodash');
 var path = require('path');
+var fs = require('fs');
 
 // PRIVATE VARIABLES
 var username, password, isInit, isAuthed, cookie;
@@ -137,7 +138,15 @@ var structr = {
                     .then(function () {
                         //publish if necessary
                         if (pubOptions) {
-                            return structr.backup.publish(filename, pubOptions);
+                            return structr.backup.publish(filename, pubOptions)
+                                .then(function(localFile){
+                                    //if we succeeded in publishing we're going to delete the file now,
+                                    if (fs.statSync(localFile).isFile()){
+                                       fs.unlinkSync(localFile);
+                                        structr.log("successful upload and local delete of backup file:", localFile)
+                                    }
+                                    return localFile;
+                                });
                         }
                         else {
                             return Q.resolve(filename)
