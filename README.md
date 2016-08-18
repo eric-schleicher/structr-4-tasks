@@ -1,15 +1,71 @@
 # structr-4-tasks
-A library that provides REST access to a Structr instance  in a format useful for standalone operations as well as for use in conjunction with other libraries (like [Gulp](http://gulpjs.com/))
+--
+A library that provides simplified access to a Structr's REST interfaces.  it also can help streamline some of your maintenanc needs by streamlining the process of making backups and publishing them to a remote location (currenty implemented with [AWS S3](https:aws.amazon.com/s3).  Hopefully you find this library useful for standalone operations as well as for use in conjunction with other libraries (like [Gulp](http://gulpjs.com/))
 
-### Use 
+### Example - Getting Started  
 ```javascript
-var structr = require('structr-4-tasks');
-//return the base object, which is not initialized
+//a variable to hold the structr utility object
+var structr;
 
-// Initializing (and authenticating the library)
-// structr.init(username, password [, options])
-structr.init("myusername", mypassword);
+//simultaneously require and initialize the connection
+require('structr-4-tasks').init("notyourusername", "notyoursmypassword")
+   .then(function(newStructrObject){
+      structr = newStructrObject;
+   })
+   .then(yourStuff) //<--the entry point into your work that ensures that a valid connection will be available
+   .catch(function(e){
+      //Oops!  you ended up here if connection failed or you have an untrapped error in yourStuff();
+      JSON.stringify(e, null, '\t')
+      
+      //some automation/scheduling systems like a proper error to correctly understand that this process failed.
+      process.exit(-1);
+   });
+
+var yourStuff = function(){
+   //lets get to work
+   //requests the json-schema definition of an entity in your structr
+   structr.rest.getSchema("MyEntity", "default").then(function(response){
+      //if you specify an optional logger (like with gulp-utils), it is available throught the structr.log member;
+      //this is handy if you're using the library with gulp and would like get the pretty logging      
+      structr.log(response.result.result_count) 
+      })  
+};
 ```
+
+#### Dependencies
+structr-4-tasks uses the following NPM packages internally
+
+`argv` 
+`lodash`
+`minimist`
+`q`
+`request`
+`request-promise`
+`s3`
+`simple-publishers`
+### Interfaces
+
+`.init(username, password, logger, options)`
+the logger input
+
+#### `structr-4-tasks.rest`
+`.get(entity, view, urlOptions)`
+  simple get function, optionally allow you specify additional argument
+
+`.post(entity, data)`
+post data to the 
+
+`.put(entity, id, data)`
+note: not yet implmeented `//todo`
+
+`.delete`
+performs a delete post against a single ID.  will not allow you to delete all nodes at onces 
+
+`.getSchema(entity, optionalView)`
+
+##### Backup `structr-4-tasks.backup[...]`
+`.run(fileName, publishOptions)
+`.move(fromFile, toFile) `//note to rename these`
 By omitting an options object, you are implicitly accepting the following defaults;
 ```javacscript
 var defaultOptions = {
