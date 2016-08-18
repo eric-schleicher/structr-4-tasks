@@ -76,6 +76,14 @@ var structr = {
             if (urlOptions) urlBits.push(urlOptions);
             return request.get(urlBits.join("/"), getOptions());
         },
+        getById: function(id, view){
+            if (!id  || /[0-9A-Za-z]{32}/.test(id)===false){
+                return Q.reject(new Error("An id conforming to uuid4 format must be supplied to use this function"));
+            }
+            var urlBits = [url(), restBase, id];
+            if (view) urlBits.push(view);
+            return request.get(urlBits.join("/"), getOptions());
+        },
         post: function (entity, data) {
             var urlBits = [url(), restBase, entity];
             var postOptions = getOptions();
