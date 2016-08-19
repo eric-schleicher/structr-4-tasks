@@ -71,12 +71,14 @@ var publishers = require('simple-publishers');
 var structr = {
     rest: {
         get: function (entity, view, urlOptions) {
+            view = view || 'default';
             var urlBits = [url(), restBase, entity];
             if (view) urlBits.push(view);
             if (urlOptions) urlBits.push(urlOptions);
             return Q(request.get(urlBits.join("/"), getOptions()));
         },
         getById: function(id, view){
+            view = view || 'default';
             if (!id  || /[0-9A-Za-z]{32}/.test(id)===false){
                 return Q.reject(new Error("An id conforming to uuid4 format must be supplied to use this function"));
             }
