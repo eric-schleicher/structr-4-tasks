@@ -113,7 +113,7 @@ var structr = {
 
             }
         },
-        put: function (entity, id, data) {
+        putById: function (entity, id, data) {
             //if not provided with a plausible id value; fail.
             if (!id || /[0-9a-fA-F]{32}/.test(id)===false){
                 return Q.reject(new Error("PUT operations require an id value that conforms the uuid4 specification"));
@@ -126,7 +126,22 @@ var structr = {
             var urlBits = [url(), restBase, id];
             var putOptions = getOptions();
             putOptions.body = data;
-            return Q(request.delete(urlBits.join("/"), putOptions));
+            return Q(request.put(urlBits.join("/"), putOptions));
+        },
+        put: function(entity, data){
+            //if not provided with an entity value; fail
+            if (!entity){
+                return Q.reject(new Error("Invalid or missing Entity Type value; please check your input and try again"));
+            }
+            //require input data to be an array
+            if (!Array.isArray(data)){
+                return Q.reject(new Error("Cannot PUT on an Class of Entities without List of Entities to Update, please make sure you data is in the form of an Array"));
+            }
+
+            var urlBits = [url(), restBase, entity];
+            var putOptions = getOptions();
+            putOptions.body = data;
+            return Q(request.put(urlBits.join("/"), putOptions));
         },
         getSchema: function (entity, optionalView) {
             var urlBits = [url(), restBase, '_schema'];
