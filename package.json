@@ -1,6 +1,6 @@
 {
   "name": "structr-4-tasks",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A library that exposes REST connections to an instance of Structr",
   "main": "structr-4-tasks.js",
   "scripts": {

@@ -74,7 +74,7 @@ var structr = {
             var urlBits = [url(), restBase, entity];
             if (view) urlBits.push(view);
             if (urlOptions) urlBits.push(urlOptions);
-            return request.get(urlBits.join("/"), getOptions());
+            return Q(request.get(urlBits.join("/"), getOptions()));
         },
         getById: function(id, view){
             if (!id  || /[0-9A-Za-z]{32}/.test(id)===false){
@@ -82,13 +82,13 @@ var structr = {
             }
             var urlBits = [url(), restBase, id];
             if (view) urlBits.push(view);
-            return request.get(urlBits.join("/"), getOptions());
+            return Q(request.get(urlBits.join("/"), getOptions()));
         },
         post: function (entity, data) {
             var urlBits = [url(), restBase, entity];
             var postOptions = getOptions();
             postOptions.body = data;
-            return request.post(urlBits.join('/'), postOptions);
+            return Q(request.post(urlBits.join('/'), postOptions));
         },
         delete: function (entity, id) {
             var deletableEntities = ['RenderingChildRegion', 'RenderingParentRegion', 'Variable', 'ProductConfiguration', "ConfigurationGroup", "Visualization"];
@@ -134,7 +134,7 @@ var structr = {
                 urlBits.push(entity);
                 if (optionalView) urlBits.push(optionalView);
             }
-            return request.get(urlBits.join("/"), getOptions());
+            return Q(request.get(urlBits.join("/"), getOptions()));
         }
     },
     backup: {
