@@ -1,8 +1,13 @@
-# structr-4-tasks
+# structr-4-tasks  
 --
-A library that provides simplified access to a Structr's REST interfaces.  it also can help streamline some of your maintenanc needs by streamlining the process of making backups and publishing them to a remote location (currenty implemented with [AWS S3](https:aws.amazon.com/s3).  Hopefully you find this library useful for standalone operations as well as for use in conjunction with other libraries (like [Gulp](http://gulpjs.com/))
+A library that provides simplified access to a Structr's REST interfaces.  it also can help streamline some of your maintenance needs by the process of making backups and publishing them to a remote location (currenty implemented with [AWS S3](https:aws.amazon.com/s3).  Hopefully you find this library useful for standalone operations as well as for use in conjunction with other libraries (like [Gulp](http://gulpjs.com/))
 
-### Example - Getting Started  
+### Getting Started
+from the commandline with node & npm already installed:
+`npm install structr-4-tasks`
+
+### Usage Examples 
+   
 ```javascript
 //a variable to hold the structr utility object
 var structr;
@@ -52,20 +57,46 @@ the logger input
 `.get(entity, view, urlOptions)`
   simple get function, optionally allow you specify additional argument
 
+`.getById(entity, view, urlOptions)`
+  simple get function, optionally allow you specify additional argument
+
 `.post(entity, data)`
 post data to the 
 
-`.put(entity, id, data)`
-note: not yet implmeented `//todo`
+`.putById(entity, id, data)`
+note: not yet implemented `//todo`
 
-`.delete`
+`.delete` 
 performs a delete post against a single ID.  will not allow you to delete all nodes at onces 
 
 `.getSchema(entity, optionalView)`
+get entity metadata from the system for a specific entity/view
 
 ##### Backup `structr-4-tasks.backup[...]`
-`.run(fileName, publishOptions)
-`.move(fromFile, toFile) `//note to rename these`
+`.run(fileName, publishOptions)`
+
+ Example publish options
+ 
+```javascript
+  var publishOptions = {
+      "method": "s3",
+      "destination": {
+          Bucket: "mybucketname/folder1",
+          //Key: filename.split(path.sep).pop()
+          // other options supported by putObject, except Body and ContentLength.
+          // See: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#putObject-property
+      },
+      "forceOverwrite":true,  //<--overwrite the file if it already exists in the target
+      "bucketSubfolder": "thatServer",
+      // Your AWS access token(s)
+      "credentials": {
+          accessKey: "NOTYOURACCESSKEY",
+          secretAccessKey: "NOTYOURSECRETACCESSKEY"
+      },
+      "cleanUpOnSuccess":true  //<--delete the backup after it's been successfully uploaded
+  };
+```
+
 By omitting an options object, you are implicitly accepting the following defaults;
 ```javacscript
 var defaultOptions = {
@@ -111,16 +142,18 @@ var structr = require('structr-4-tasks').init("myusername", "mypassword", gulpUt
 ``` 
 
 
-Best practice
-Use environment variables in your code to handle the username and password so that you don't have credentials in your code.
+#### Credentials Best practice
+**Don't:** put your username and password in your project
+**Do:**  Use environment variables in your code to handle the username and password so that you don't have credentials in your code.
 example:
 ```javascript
-var structr = require('structr-4-tasks).init(process.env.username process.env.password)
+// For example use the process.env object to retrieve value that's you've previously Exported
+var structr = require('structr-4-tasks').init(process.env.username process.env.password)
 ```
-**Note:**
 
-the REST function in the library are not attached to the structr.rest until the library has successfully authenticated.  this forces failure on premature RESTful calls to structr. 
-
-
-#### Known issues:
-- [ ] `structr.rest.put` is not yet implemented 
+#### To Do:
+- [ ] change delete to be deleteById
+- [ ] ensure all rest method require valida authenticated connection with a common function
+- [ ] Add usage example of how to publish to s3
+- [ ] Add Publish option example
+ 
