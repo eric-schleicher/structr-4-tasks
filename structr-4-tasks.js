@@ -102,7 +102,9 @@ var structr = {
                     if (id && /[0-9a-fA-F]{32}/.test(id) && process.env.allowdeletes === "yes") {
                         //we'll allow the delete
                         var urlBits = [url(), restBase, id];  //<-- this differs in that the only the ID is used and lowers the probability that a whole class of entities are deleted by accident
-                        return Q(request.delete(urlBits.join("/"), getOptions()));
+                        var deleteOptions = getOptions();
+                        deleteOptions.headers['Structr-Websocket-Broadcast']='disabled';
+                        return Q(request.delete(urlBits.join("/"), deleteOptions));
                     }
                     else {
                         return Q.reject(new Error("Will not delete, as either a valid ID is missing or environment delete confirmation (environment variable) is not present"));
