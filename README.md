@@ -1,9 +1,9 @@
 # structr-4-tasks  
 --
-A library that provides simplified access to a Structr's REST interfaces.  it also can help streamline some of your maintenance needs by the process of making backups and publishing them to a remote location (currenty implemented with [AWS S3](https:aws.amazon.com/s3).  Hopefully you find this library useful for standalone operations as well as for use in conjunction with other libraries (like [Gulp](http://gulpjs.com/))
+A library that provides simplified access to a Structr's REST interfaces.  It also can help streamline some of your maintenance tasks by enabling simple backup publishing to a remote location (currenty only implemented with [AWS S3](https:aws.amazon.com/s3).  Hopefully you find this library useful for standalone operations as well as for use in conjunction with other libraries (like [Gulp](http://gulpjs.com/))
 
 ### Getting Started
-from the commandline with node & npm already installed:
+From the commandline, with node & npm already installed:
 `npm install structr-4-tasks`
 
 ### Usage Examples 
@@ -13,7 +13,7 @@ from the commandline with node & npm already installed:
 var structr;
 
 //simultaneously require and initialize the connection
-require('structr-4-tasks').init("notyourusername", "notyoursmypassword")
+require('structr-4-tasks').init("notyourusername", "notyourpassword") //<-- by default presumes your running from localhost
    .then(function(newStructrObject){
       structr = newStructrObject;
    })
@@ -97,6 +97,7 @@ get entity metadata from the system for a specific entity/view
   };
 ```
 
+##### Initialization (`struct.init`)
 By omitting an options object, you are implicitly accepting the following defaults;
 ```javacscript
 var defaultOptions = {
@@ -111,7 +112,6 @@ var defaultOptions = {
     logger: console
 };
 ```
-
 This means that you can provide command line options to overrise the following properties 
  - protocol
  - server
@@ -122,11 +122,8 @@ Optionally you can set the logger to be your preferred logging function. if you 
 
 You can provide a reference to any the top level object, in so much as it has a `log()` function.  For example if used in a regular node context, if you omit the logger argument, providing `console` or `console.log` (either will work).
 the following are functionally equivalent
-```javascript
 
-```
-  alternatively, if you're using **structr-4-tasks** with a library like 'gulp-utils' you can provide your utils reference
-example
+  alternatively, if you're using **structr-4-tasks** with a library like 'gulp-utils' you can provide your utils reference example
 ``` javascript
 var structr = require('structr-4-tasks')
 structr.init("myusername", "mypassword", console)
@@ -140,6 +137,7 @@ var gulpUtils = require('gulp-util');
 var structr = require('structr-4-tasks').init("myusername", "mypassword", gulpUtils)
 
 ``` 
+### Initialization
 
 
 #### Credentials Best practice
